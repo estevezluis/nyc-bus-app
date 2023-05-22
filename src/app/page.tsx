@@ -1,113 +1,228 @@
-import Image from 'next/image'
+'use client'
+import { Route, SearchResult, VehicleMonitor, OnwardCall } from './type'
+
+import Search from './Search'
+import ListRoute from './ListRoute'
+
+import 'mapbox-gl/dist/mapbox-gl.css'
+import mapboxgl from 'mapbox-gl'
+import { lineString, bbox } from '@turf/turf'
+import { decodePolyline } from './Utils'
+
+import { useState, useEffect } from 'react'
+import { renderToString } from 'react-dom/server'
+
+import dayjs from 'dayjs'
+import relativeTime from 'dayjs/plugin/relativeTime'
+
+import { MAPBOX_ACCESS_TOKEN, API_ENDPOINT } from './constants'
 
 export default function Home() {
-  return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">src/app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
+	const [map, setMap] = useState<null | mapboxgl.Map>(null)
+	const [markers, setMarkers] = useState<mapboxgl.Marker[]>([])
+	const [selected, setSelected] = useState<SearchResult | null>(null)
 
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 before:lg:h-[360px]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
+	useEffect(() => {
+		dayjs.extend(relativeTime)
+		mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN
 
-      <div className="mb-32 grid text-center lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
+		const map = new mapboxgl.Map({
+			container: 'map',
+			style: 'mapbox://styles/mapbox/streets-v12',
+			center: [-73.98039, 40.67569],
+			zoom: 11
+		})
 
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800 hover:dark:bg-opacity-30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
+		setMap(() => map)
 
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Explore the Next.js 13 playground.
-          </p>
-        </a>
+		map.on('load', () => {
+			map.addSource('bus-data', {
+				type: 'geojson',
+				data: { type: 'FeatureCollection', features: [] }
+			})
 
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
-  )
+			map.addLayer({
+				id: 'bus',
+				source: 'bus-data',
+				type: 'line',
+				paint: {
+					'line-color': [
+						'concat',
+						'#',
+						['get', 'color']
+					],
+					'line-opacity': 0.7,
+					'line-width': 4
+				}
+			})
+		})
+
+	}, [])
+
+	function resetMap() {
+		setSelected(() => null)
+		setMarkers((markersToRemove) => {
+			if (!markersToRemove.length) return markersToRemove
+
+			for (let i = 0; i < markersToRemove.length; i++) {
+				markersToRemove[i].remove()
+			}
+
+			return []
+		})
+
+		const source = map?.getSource('bus-data') as any
+
+		console.log(source)
+
+		source.setData({ type: 'FeatureCollection', features: [] })
+	}
+
+	async function getActiveVehicle(routeId: string) {
+		const params = new URLSearchParams({ 'LineRef': routeId })
+
+		const url = `/api/vehicle-monitoring?${params.toString()}`
+
+		const response = await fetch(url)
+		const responseData = await response.json()
+
+		return responseData
+	}
+
+	async function getVehicleData(vehicleRef: string) {
+		const params = new URLSearchParams({ 'VehicleRef': vehicleRef })
+
+		const url = `/api/vehicle-monitoring?${params.toString()}`
+
+		const response = await fetch(url)
+		const responseData = await response.json()
+
+		return responseData
+	}
+
+	function popUp({ VehicleRef, PublishedLineName, DestinationName, OnwardCalls }: any) {
+		return renderToString(
+			<div>
+				<div className="header vehicle">
+					<p className="title">
+						{PublishedLineName} {DestinationName}
+					</p>
+					<p>
+						<span className="type">
+							Vehicle #{VehicleRef.split('_')[1]}
+						</span>
+					</p>
+				</div>
+				<div>
+					<p>Next Stops:</p>
+					<ul>
+						{
+							OnwardCalls.OnwardCall.map((onwardCall: OnwardCall) => {
+								return (
+									<li key={onwardCall.StopPointRef}>
+										<span className="font-semibold">{onwardCall.StopPointName}</span>
+										&nbsp;{dayjs(onwardCall.ExpectedArrivalTime).fromNow()},&nbsp;{onwardCall.Extensions.Distances.PresentableDistance}
+									</li>
+								)
+							})
+						}
+					</ul>
+				</div>
+			</div>
+		)
+	}
+
+	function showLiveVehicles(routeId: string) {
+		getActiveVehicle(routeId).then((resData: VehicleMonitor) => {
+			resData.Siri.ServiceDelivery.VehicleMonitoringDelivery[0].VehicleActivity.forEach((activity) => {
+				const {
+					VehicleLocation, Bearing, DestinationName, PublishedLineName, VehicleRef, OnwardCalls
+				} = activity.MonitoredVehicleJourney
+
+				const rotation = Math.floor(Bearing / 5) * 5
+
+				const markerElement = document.createElement('div')
+
+				const imageElement = document.createElement('img')
+
+				imageElement.setAttribute('width', '45')
+				imageElement.setAttribute('height', '45')
+				imageElement.setAttribute('src', `${API_ENDPOINT}/img/vehicle/vehicle-${rotation}.png`)
+
+				markerElement.appendChild(imageElement)
+
+				const mark = new mapboxgl.Marker(markerElement).setLngLat(
+					[VehicleLocation.Longitude, VehicleLocation.Latitude]
+				).addTo(map as mapboxgl.Map)
+
+				setMarkers((markers) => [...markers, mark])
+
+				mark.getElement().addEventListener('click', async (event: MouseEvent) => {
+					event.preventDefault()
+
+					const vehicleData: VehicleMonitor = await getVehicleData(VehicleRef)
+
+					const { OnwardCalls } = vehicleData.Siri.ServiceDelivery
+						.VehicleMonitoringDelivery[0].VehicleActivity[0]
+						.MonitoredVehicleJourney
+
+					const currentPopUp = mark.getPopup() ?? new mapboxgl.Popup({ maxWidth: '100%'})
+
+					currentPopUp.setHTML(
+						popUp({ DestinationName, PublishedLineName, VehicleRef, OnwardCalls })
+					)
+
+					mark.setPopup(currentPopUp)
+					mark.togglePopup()
+				})
+			})
+		})
+	}
+
+	function onSelection(selected: SearchResult) {
+		setSelected(() => selected)
+
+		if (selected.resultType === 'RouteResult') {
+			const route = selected.matches[0] as Route
+
+			const features = route.directions.flatMap((direction) => {
+				return direction.polylines.flatMap((encodedPolyline: string) => {
+					const points = decodePolyline(encodedPolyline)
+
+					return lineString(points, { color: route.color })
+				})
+			})
+
+			const featureCollection = { type: 'FeatureCollection', features: features }
+
+			const [ west, south, east, north ] = bbox(featureCollection)
+
+			map?.fitBounds([
+				[west, south], [east, north]
+			], { padding: { top: 5, bottom: 5, right: 5, left: 450 } })
+
+			const source = map?.getSource('bus-data') as any
+
+			console.log(source)
+
+			source.setData(featureCollection)
+
+			showLiveVehicles(route.id)
+		}
+	}
+
+	return (
+		<>
+			<div className="absolute z-10 w-1/3 max-w-xs min-w-xs ml-2 mt-2">
+				<div className="relative">
+					<Search onReset={resetMap} onSelection={onSelection} />
+					{!!selected && selected.empty === false
+						&& selected.resultType === 'RouteResult' &&
+						<ListRoute route={selected.matches[0] as Route}></ListRoute>
+					}
+				</div>
+			</div>
+			<div id="map"></div>
+		</>
+	)
 }
