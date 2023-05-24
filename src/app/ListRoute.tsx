@@ -1,7 +1,13 @@
 import { Route } from './type'
 import ListStops from './ListStops'
+import { useEffect } from 'react'
 
-export default function ListRoute({ route }: { route: Route }) {
+type Props = {
+	route: Route
+}
+
+export default function ListRoute({ route }: Props) {
+	useEffect(() => {}, [route])
 
 	return (
 		<div className="rounded shadow mt-2 bg-white w-full p-2 max-h-[75vh] overflow-auto">
@@ -12,19 +18,16 @@ export default function ListRoute({ route }: { route: Route }) {
 			<p className="pt-1 text-sm text-slate-600">{route.description}</p>
 
 			<div className="py-2">
-
-				<div className="accordion">
-					{route.directions.map(({ directionId, destination }) => {
-						return (
-							<div key={directionId} className="accordion-iten">
-								<div className="accordion-header text-ellipsis font-semibold">{destination}</div>
-								<div className="accordion-body text-ellipsis">
-									<ListStops routeId={route.id} directionId={directionId} />
-								</div>
+				{route.directions.map(({ directionId, destination }) => {
+					return (
+						<div key={directionId} className="accordion-iten">
+							<div className="text-ellipsis font-semibold">{destination}</div>
+							<div className="text-ellipsis">
+								<ListStops routeId={route.id} directionId={directionId} />
 							</div>
-						)
-					})}
-				</div>
+						</div>
+					)
+				})}
 			</div>
 		</div>
 	)

@@ -1,12 +1,5 @@
-import { useEffect, useState } from "react"
-
-type Stop = {
-	id: string,
-	latitude: number,
-	longitude: number,
-	name: string,
-	stopDirection: string,
-}
+import { Stop } from './type'
+import { useEffect, useState } from 'react'
 
 type Props = {
     routeId: string,
@@ -23,7 +16,9 @@ export default function ListStops({ routeId, directionId }: Props) {
 
 		const url = `/api/stops-on-route-for-direction?${params.toString()}`
 
-        fetch(url).then((response) => response.json()).then((response: { stops: Stop[] }) => {
+        fetch(url)
+        .then((response) => response.json())
+        .then((response: { stops: Stop[] }) => {
             setStops(() => response.stops)
         })
     }, [routeId, directionId])

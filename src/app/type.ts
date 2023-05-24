@@ -9,12 +9,6 @@ export type SearchResult = {
 	resultType: 'RouteResult' | 'StopResult' | 'GeocodeResult',
 }
 
-export enum ResultType {
-	ROUTE = "RouteResult",
-	STOP = "StopResult",
-	GEOCODE = "GeocodeResult",
-}
-
 type RouteDirection = {
 	destination: string,
 	directionId: string,
@@ -40,11 +34,13 @@ export type Geocode = {
 	neighborhood: string,
 }
 
+
 export type Stop = {
 	name: string,
 	id: string,
 	latitude: number,
 	longitude: number,
+	stopDirection?: string,
 	routesAvailable?: Route[]
 }
 
