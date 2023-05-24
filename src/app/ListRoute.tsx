@@ -11,10 +11,15 @@ export default function ListRoute({ route }: Props) {
 
 	return (
 		<div className="rounded shadow mt-2 bg-white w-full p-2 max-h-[75vh] overflow-auto">
-			<h3 className="py-1 text-ellipsis">{route.shortName} {route.longName}</h3>
-			<div className="h-1 w-full" style={{
-				backgroundColor: `#${route.color ?? '000'}`
-			}}></div>
+			<h3 className="py-1 text-ellipsis">
+				{route.shortName} {route.longName}
+			</h3>
+			<div
+				className="h-1 w-full"
+				style={{
+					backgroundColor: `#${route.color ?? '000'}`,
+				}}
+			></div>
 			<p className="pt-1 text-sm text-slate-600">{route.description}</p>
 
 			<div className="py-2">
