@@ -8,7 +8,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "cypress": "cypress open",
+    "test:cypress": "cypress run"
   },
   "dependencies": {
     "@turf/helpers": "^6.5.0",
@@ -28,6 +30,7 @@
     "@types/react": "18.2.6",
     "@types/react-dom": "18.2.4",
     "autoprefixer": "10.4.14",
+    "cypress": "^12.13.0",
     "eslint": "8.40.0",
     "eslint-config-next": "13.4.2",
     "eslint-config-prettier": "^8.8.0",
