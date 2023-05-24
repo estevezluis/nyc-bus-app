@@ -1,6 +1,6 @@
 'use client'
-import MapOverlay from "./MapControl"
-import { MapProvider } from "./MapContext"
+import MapOverlay from './MapControl'
+import { MapProvider } from './MapContext'
 
 export default function Home() {
 	return (

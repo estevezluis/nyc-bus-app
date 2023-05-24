@@ -7,18 +7,18 @@ const center = new mapboxgl.LngLat(-73.98039, 40.67569)
 const zoom = 11
 
 export type MapContextType = {
-	map: Map | null,
-	reset: () => void,
-	addedMarkers: (markers: Marker[]) => void,
+	map: Map | null
+	reset: () => void
+	addedMarkers: (markers: Marker[]) => void
 }
 
 const MapContext = createContext<MapContextType | null>(null)
 
 export const MapProvider = ({ children }: any) => {
-    const [ map, setMap ] = useState<Map | null>(null)
-	const [ _markers, setMarkers ] = useState<Marker[]>([])
+	const [map, setMap] = useState<Map | null>(null)
+	const [_markers, setMarkers] = useState<Marker[]>([])
 
-    useEffect(() => {
+	useEffect(() => {
 		mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN
 
 		const map = new mapboxgl.Map({
@@ -28,14 +28,14 @@ export const MapProvider = ({ children }: any) => {
 			zoom: 11,
 			maxBounds: [
 				[-74.255641, 40.496006],
-				[-73.700272, 40.917577]
-			]
+				[-73.700272, 40.917577],
+			],
 		})
 
 		map.on('load', () => {
 			map.addSource('bus-data', {
 				type: 'geojson',
-				data: { type: 'FeatureCollection', features: [] }
+				data: { type: 'FeatureCollection', features: [] },
 			})
 
 			map.addLayer({
@@ -43,25 +43,21 @@ export const MapProvider = ({ children }: any) => {
 				source: 'bus-data',
 				type: 'line',
 				paint: {
-					'line-color': [
-						'concat',
-						'#',
-						['get', 'color']
-					],
+					'line-color': ['concat', '#', ['get', 'color']],
 					'line-opacity': 0.7,
-					'line-width': 4
-				}
+					'line-width': 4,
+				},
 			})
 		})
 
-        setMap(() => map)
+		setMap(() => map)
 
 		return () => map.remove()
-    }, [])
+	}, [])
 
 	function reset() {
 		setMarkers((activeMarkers) => {
-			activeMarkers.forEach(active => active.remove())
+			activeMarkers.forEach((active) => active.remove())
 
 			return []
 		})
@@ -73,13 +69,17 @@ export const MapProvider = ({ children }: any) => {
 		setMarkers((prevMarkers) => prevMarkers.concat(markers))
 	}
 
-    return <MapContext.Provider value={{
-		map,
-		reset,
-		addedMarkers
-	}}>
-        {children}
-    </MapContext.Provider>
+	return (
+		<MapContext.Provider
+			value={{
+				map,
+				reset,
+				addedMarkers,
+			}}
+		>
+			{children}
+		</MapContext.Provider>
+	)
 }
 
 export const useMap = () => useContext(MapContext)
