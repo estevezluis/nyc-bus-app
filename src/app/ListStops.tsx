@@ -1,3 +1,4 @@
+'use client'
 import { Stop } from './type'
 import { useEffect, useState } from 'react'
 
@@ -7,7 +8,7 @@ type Props = {
 }
 
 export default function ListStops({ routeId, directionId }: Props) {
-    const [ stops, setStops ] = useState<Stop[] | null>(null)
+    const [ stops, setStops ] = useState<Stop[]>([])
 
     useEffect(() => {
 		const params = new URLSearchParams({
@@ -25,12 +26,10 @@ export default function ListStops({ routeId, directionId }: Props) {
 
     return (
         <ul>
-            {!!stops && stops.map((stop) => {
-                return (
-                    <li key={stop.id} className="cursor-pointer hover:bg-stone-100">
-                        <span className="pl-2.5">{stop.name}</span>
-                    </li>
-                )
+            {stops.map((stop) => {
+                return <li key={stop.id} className="hover:bg-stone-100">
+                    <span className="pl-2.5">{stop.name}</span>
+                </li>
             })}
         </ul>
     )

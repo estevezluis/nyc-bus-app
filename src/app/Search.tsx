@@ -17,6 +17,11 @@ export default function Search({ onReset, onSelection }: Props) {
 
     const fetchSuggestions = useRef(
         debounce((nextValue: string) => {
+            if (nextValue === '') {
+                setSuggestions(() => [])
+                return
+            }
+
             const params = new URLSearchParams({ term: nextValue })
 
             fetch(`/api/autocomplete?${params.toString()}`)
@@ -78,13 +83,13 @@ export default function Search({ onReset, onSelection }: Props) {
                 <input onChange={onChange} className="h-full w-full py-2.5 pl-2.5 pr-10 outline-none" placeholder="Search by Route"
                     type="text" name="search" id="search" value={searchTerm} />
                 <div className="bg-white text-slate-600">
-                    {!!suggestions.length && <ul>
+                    <ul>
                         {suggestions.map(({label, value}) => {
-                            return <li key={value} onClick={(e) => suggestionClick(value)} className="cursor-pointer border-b border-solid hover:bg-stone-100">
-                                    <span>{label}</span>
-                                </li>
+                            return <li key={value} onClick={(_e) => suggestionClick(value)} className="cursor-pointer border-b border-solid hover:bg-stone-100">
+                                <span>{label}</span>
+                            </li>
                         })}
-                    </ul>}
+                    </ul>
                 </div>
                 <div className="absolute h-full top-0 right-2 z-20">
                     {!!fetching && <span style={{
