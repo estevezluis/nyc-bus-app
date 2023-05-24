@@ -1,11 +1,7 @@
-'use client'
 import { Route } from './type'
 import ListStops from './ListStops'
-import { useEffect } from 'react'
 
 export default function ListRoute({ route }: { route: Route }) {
-
-	useEffect(() => {}, [])
 
 	return (
 		<div className="rounded shadow mt-2 bg-white w-full p-2 max-h-[75vh] overflow-auto">
@@ -19,7 +15,6 @@ export default function ListRoute({ route }: { route: Route }) {
 
 				<div className="accordion">
 					{route.directions.map(({ directionId, destination }) => {
-						console.log(route.id, directionId, destination)
 						return (
 							<div key={directionId} className="accordion-iten">
 								<div className="accordion-header text-ellipsis font-semibold">{destination}</div>

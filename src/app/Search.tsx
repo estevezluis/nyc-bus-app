@@ -52,7 +52,6 @@ export default function Search({ onReset, onSelection }: Props) {
         const URL = `/api/search?q=${suggestionValue}`
 
         fetch(URL).then((response) => response.json()).then((response: { searchResults: SearchResult }) => {
-            console.log(response)
 
             if (response.searchResults.empty === false) {
                 setSuggestions(() => [])

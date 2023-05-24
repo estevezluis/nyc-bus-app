@@ -26,7 +26,7 @@ export default function ListStops({ routeId, directionId }: Props) {
         fetch(url).then((response) => response.json()).then((response: { stops: Stop[] }) => {
             setStops(() => response.stops)
         })
-    }, [])
+    }, [routeId, directionId])
 
     return (
         <ul>

@@ -5,7 +5,7 @@ import Search from './Search'
 import ListRoute from './ListRoute'
 
 import 'mapbox-gl/dist/mapbox-gl.css'
-import mapboxgl from 'mapbox-gl'
+import mapboxgl, { GeoJSONSource } from 'mapbox-gl'
 import { lineString, bbox } from '@turf/turf'
 import { decodePolyline } from './Utils'
 
@@ -17,20 +17,28 @@ import relativeTime from 'dayjs/plugin/relativeTime'
 
 import { MAPBOX_ACCESS_TOKEN, API_ENDPOINT } from './constants'
 
+dayjs.extend(relativeTime)
+
+const center = new mapboxgl.LngLat(-73.98039, 40.67569)
+const zoom = 11
+
 export default function Home() {
 	const [map, setMap] = useState<null | mapboxgl.Map>(null)
 	const [markers, setMarkers] = useState<mapboxgl.Marker[]>([])
 	const [selected, setSelected] = useState<SearchResult | null>(null)
 
 	useEffect(() => {
-		dayjs.extend(relativeTime)
 		mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN
 
 		const map = new mapboxgl.Map({
 			container: 'map',
 			style: 'mapbox://styles/mapbox/streets-v12',
-			center: [-73.98039, 40.67569],
-			zoom: 11
+			center,
+			zoom,
+			maxBounds: [
+				[-74.255641, 40.496006],
+				[-73.700272, 40.917577]
+			]
 		})
 
 		setMap(() => map)
@@ -57,9 +65,11 @@ export default function Home() {
 			})
 		})
 
+		return () => map.remove()
 	}, [])
 
-	function resetMap() {
+	function resetMap(): void {
+		map?.flyTo({ center, zoom })
 		setSelected(() => null)
 		setMarkers((markersToRemove) => {
 			if (!markersToRemove.length) return markersToRemove
@@ -71,28 +81,15 @@ export default function Home() {
 			return []
 		})
 
-		const source = map?.getSource('bus-data') as any
-
-		console.log(source)
+		const source = map?.getSource('bus-data') as GeoJSONSource
 
 		source.setData({ type: 'FeatureCollection', features: [] })
 	}
 
-	async function getActiveVehicle(routeId: string) {
-		const params = new URLSearchParams({ 'LineRef': routeId })
+	async function getVehicleData(params: { LineRef?: string, VehicleRef?: string }): Promise<VehicleMonitor> {
+		const urlSearchParams = new URLSearchParams(params)
 
-		const url = `/api/vehicle-monitoring?${params.toString()}`
-
-		const response = await fetch(url)
-		const responseData = await response.json()
-
-		return responseData
-	}
-
-	async function getVehicleData(vehicleRef: string) {
-		const params = new URLSearchParams({ 'VehicleRef': vehicleRef })
-
-		const url = `/api/vehicle-monitoring?${params.toString()}`
+		const url = `/api/vehicle-monitoring?${urlSearchParams.toString()}`
 
 		const response = await fetch(url)
 		const responseData = await response.json()
@@ -133,10 +130,12 @@ export default function Home() {
 	}
 
 	function showLiveVehicles(routeId: string) {
-		getActiveVehicle(routeId).then((resData: VehicleMonitor) => {
+		const allMarkers: mapboxgl.Marker[] = []
+
+		getVehicleData({ LineRef: routeId }).then((resData: VehicleMonitor) => {
 			resData.Siri.ServiceDelivery.VehicleMonitoringDelivery[0].VehicleActivity.forEach((activity) => {
 				const {
-					VehicleLocation, Bearing, DestinationName, PublishedLineName, VehicleRef, OnwardCalls
+					VehicleLocation, Bearing, DestinationName, PublishedLineName, VehicleRef
 				} = activity.MonitoredVehicleJourney
 
 				const rotation = Math.floor(Bearing / 5) * 5
@@ -155,12 +154,12 @@ export default function Home() {
 					[VehicleLocation.Longitude, VehicleLocation.Latitude]
 				).addTo(map as mapboxgl.Map)
 
-				setMarkers((markers) => [...markers, mark])
+				allMarkers.push(mark)
 
 				mark.getElement().addEventListener('click', async (event: MouseEvent) => {
 					event.preventDefault()
 
-					const vehicleData: VehicleMonitor = await getVehicleData(VehicleRef)
+					const vehicleData: VehicleMonitor = await getVehicleData({ VehicleRef })
 
 					const { OnwardCalls } = vehicleData.Siri.ServiceDelivery
 						.VehicleMonitoringDelivery[0].VehicleActivity[0]
@@ -176,6 +175,7 @@ export default function Home() {
 					mark.togglePopup()
 				})
 			})
+			setMarkers(() => allMarkers)
 		})
 	}
 
@@ -193,7 +193,9 @@ export default function Home() {
 				})
 			})
 
-			const featureCollection = { type: 'FeatureCollection', features: features }
+			const featureCollection: GeoJSON.FeatureCollection = {
+				type: 'FeatureCollection', features: features
+			}
 
 			const [ west, south, east, north ] = bbox(featureCollection)
 
@@ -201,9 +203,7 @@ export default function Home() {
 				[west, south], [east, north]
 			], { padding: { top: 5, bottom: 5, right: 5, left: 450 } })
 
-			const source = map?.getSource('bus-data') as any
-
-			console.log(source)
+			const source = map?.getSource('bus-data') as GeoJSONSource
 
 			source.setData(featureCollection)
 
