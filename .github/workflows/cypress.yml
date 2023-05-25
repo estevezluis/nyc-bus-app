@@ -1,0 +1,38 @@
+name: Cypress Tests
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+      - feature/*
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    env:
+        API_ENDPOINT: ${{ secrets.API_ENDPOINT }}
+        API_KEY: ${{ secrets.API_KEY }}
+        MAPBOX_ACCESS_TOKEN: ${{ secrets.MAPBOX_ACCESS_TOKEN }} 
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm install 
+    
+      - name: Start Next.js server
+        run: npm run dev &
+
+      - name: Wait for server to start
+        run: sleep 30
+
+      - name: Run Cypress tests
+        run: npm run test:cypress
