@@ -9,7 +9,7 @@ const zoom = 11
 export type MapContextType = {
 	map: Map | null
 	reset: () => void
-	addedMarkers: (markers: Marker[]) => void
+	setMarkers: React.Dispatch<React.SetStateAction<Marker[]>>
 }
 
 const MapContext = createContext<MapContextType | null>(null)
@@ -74,7 +74,7 @@ export const MapProvider = ({ children }: any) => {
 			value={{
 				map,
 				reset,
-				addedMarkers,
+				setMarkers,
 			}}
 		>
 			{children}

@@ -21,13 +21,27 @@ import { MapContextType, useMap } from './MapContext'
 
 dayjs.extend(relativeTime)
 
-export default function MapOverlay() {
-	const { map, reset, addedMarkers } = useMap() as MapContextType
-	const [selected, setSelected] = useState<SearchResult | null>(null)
+const SIXTY_SECONDS = 60 * 1000
 
-	useEffect(() => {}, [map])
+export default function MapControl() {
+	const { map, reset, setMarkers } = useMap() as MapContextType
+	const [selected, setSelected] = useState<SearchResult | null>(null)
+	const [intervalId, setIntervalId] = useState<NodeJS.Timer | null>(null)
+
+	useEffect(() => {
+		return () => {
+			if (intervalId) clearInterval(intervalId)
+		}
+	})
 
 	function resetMap(): void {
+		setIntervalId((prev) => {
+			if (prev) {
+				clearInterval(prev)
+			}
+
+			return null
+		})
 		setSelected(() => null)
 
 		reset()
@@ -152,7 +166,7 @@ export default function MapOverlay() {
 						})
 				}
 			)
-			addedMarkers(allMarkers)
+			setMarkers((prevMarkers) => prevMarkers.concat(allMarkers))
 		})
 	}
 
@@ -190,6 +204,19 @@ export default function MapOverlay() {
 			source.setData(featureCollection)
 
 			showLiveVehicles(route.id)
+			setIntervalId((_prev) => {
+				const interval = setInterval(() => {
+					setMarkers((activeMarkers) => {
+						for (const activeMarker of activeMarkers) {
+							activeMarker.remove()
+						}
+
+						return []
+					})
+					showLiveVehicles(route.id)
+				}, SIXTY_SECONDS)
+				return interval
+			})
 		}
 	}
 
