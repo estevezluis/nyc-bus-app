@@ -1,11 +1,11 @@
 'use client'
-import MapOverlay from './MapControl'
+import MapControl from './MapControl'
 import { MapProvider } from './MapContext'
 
 export default function Home() {
 	return (
 		<MapProvider>
-			<MapOverlay />
+			<MapControl />
 			<div id="map"></div>
 		</MapProvider>
 	)
