@@ -17,22 +17,12 @@ jobs:
         MAPBOX_ACCESS_TOKEN: ${{ secrets.MAPBOX_ACCESS_TOKEN }} 
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
-
-      - name: Install dependencies
-        run: npm install 
-    
-      - name: Start Next.js server
-        run: npm run dev &
-
-      - name: Wait for server to start
-        run: sleep 30
-
-      - name: Run Cypress tests
-        run: npm run test:cypress
+        - uses: actions/checkout@v3
+        - uses: actions/setup-node@v3
+          with:
+            node-version: 18
+            cache: 'pnpm'
+        - name: Install dependencies
+          run: pnpm install
+        - name: Start server and test
+          run: pnpm run test
