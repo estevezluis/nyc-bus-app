@@ -6,6 +6,7 @@ on:
       - main
       - develop
       - feature/*
+      - dev/*
 
 jobs:
   build-and-test:
@@ -18,6 +19,9 @@ jobs:
 
     steps:
         - uses: actions/checkout@v3
+        - uses: pnpm/action-setup@v2
+          with:
+            version: 'latest'
         - uses: actions/setup-node@v3
           with:
             node-version: 18
