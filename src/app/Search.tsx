@@ -5,15 +5,14 @@ import { debounce } from 'lodash'
 import { AutoComplete, SearchResult } from './type'
 
 type Props = {
-	onReset: () => void
-	onSelection: (selected: SearchResult) => void
+	onSelection: (selected: SearchResult | null) => void
 }
 
-export default function Search({ onReset, onSelection }: Props) {
+export default function Search({ onSelection }: Props) {
 	const [searchTerm, setSearchTerm] = useState<string>('')
 	const [suggestions, setSuggestions] = useState<AutoComplete[]>([])
 	const [fetching, setFetching] = useState<boolean>(false)
-	const [selected, setSelected] = useState<SearchResult | null>(null)
+	const [selected, setSelected] = useState<boolean>(false)
 
 	const fetchSuggestions = useRef(
 		debounce((nextValue: string) => {
@@ -35,7 +34,7 @@ export default function Search({ onReset, onSelection }: Props) {
 		}, 1000)
 	).current
 
-	useEffect(() => {}, [])
+	useEffect(() => {}, [onSelection, searchTerm, suggestions, selected])
 
 	function onChange(e: React.ChangeEvent<HTMLInputElement>) {
 		const value = e.target.value.toUpperCase()
@@ -48,10 +47,9 @@ export default function Search({ onReset, onSelection }: Props) {
 	function resetBtnClick(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
 		e.preventDefault()
 		setSearchTerm(() => '')
-		setSelected(() => null)
+		setSelected(() => false)
+		onSelection(null)
 		setSuggestions(() => [])
-
-		onReset()
 	}
 
 	function suggestionClick(suggestionValue: string) {
@@ -62,14 +60,14 @@ export default function Search({ onReset, onSelection }: Props) {
 			.then((response: { searchResults: SearchResult }) => {
 				if (response.searchResults.empty === false) {
 					setSuggestions(() => [])
-					setSelected(response.searchResults)
+					setSelected(true)
 					onSelection(response.searchResults)
 				}
 			})
 	}
 
 	return (
-		<div className="w-full h-9 relative shadow rounded">
+		<div data-page="search" className="w-full h-9 relative shadow rounded">
 			<label className="absolute bg-sky-600 w-10 h-9 text-center leading-10">
 				<span
 					className="inline-block w-full h-full bg-center bg-no-repeat"
