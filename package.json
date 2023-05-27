@@ -13,7 +13,8 @@
 		"lint": "next lint",
 		"prepare": "husky install",
 		"cypress": "cypress open",
-		"test:cypress": "cypress run"
+		"test:cypress": "cypress run",
+		"test": "start-server-and-test dev http://localhost:3000 test:cypress"
 	},
 	"dependencies": {
 		"@turf/helpers": "^6.5.0",
@@ -42,6 +43,7 @@
 		"husky": "^8.0.0",
 		"postcss": "8.4.23",
 		"prettier": "^2.8.8",
+		"start-server-and-test": "^2.0.0",
 		"typescript": "5.0.4"
 	}
 }
