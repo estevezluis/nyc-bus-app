@@ -1,46 +1,41 @@
-import dayjs from 'dayjs'
-import relativeTime from 'dayjs/plugin/relativeTime'
-import { OnwardCall } from './type'
-
-dayjs.extend(relativeTime)
-
 type Props = {
-	VehicleRef: string
-	PublishedLineName: string
-	DestinationName: string
-	OnwardCalls: { OnwardCall: OnwardCall[] }
+	title: string
+	type: string
+	prompt: string
+	imageSrc: string
+	children: any
 }
 export default function PopUp({
-	VehicleRef,
-	PublishedLineName,
-	DestinationName,
-	OnwardCalls,
+	title,
+	type,
+	prompt,
+	imageSrc,
+	children,
 }: Props) {
 	return (
-		<div>
-			<div className="header vehicle">
-				<p className="title">
-					{PublishedLineName} {DestinationName}
-				</p>
-				<p>
-					<span className="type">Vehicle #{VehicleRef.split('_')[1]}</span>
-				</p>
+		<div className="max-w-[400px] overflow-x-auto">
+			<div className="flex flex-row mr-2.5">
+				<div
+					style={{
+						width: '50px',
+						height: '50px',
+						marginRight: '5px',
+						backgroundColor: 'black',
+						backgroundPosition: 'center',
+						backgroundSize: 'auto',
+						backgroundImage: `url(${imageSrc})`,
+					}}
+				></div>
+				<div>
+					<p className="font-semibold">{title}</p>
+					<p>
+						<span>{type}</span>
+					</p>
+				</div>
 			</div>
 			<div>
-				<p>Next Stops:</p>
-				<ul>
-					{OnwardCalls.OnwardCall.map((onwardCall: OnwardCall) => {
-						return (
-							<li key={onwardCall.StopPointRef}>
-								<span className="font-semibold">
-									{onwardCall.StopPointName}
-								</span>
-								&nbsp;{dayjs(onwardCall.ExpectedArrivalTime).fromNow()},&nbsp;
-								{onwardCall.Extensions.Distances.PresentableDistance}
-							</li>
-						)
-					})}
-				</ul>
+				<p>{prompt}</p>
+				<div className="max-h-[200px] overflow-y-auto">{children}</div>
 			</div>
 		</div>
 	)

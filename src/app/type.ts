@@ -121,6 +121,13 @@ type VehicleMonitoringDelivery = {
 	ResponseTimestamp: string
 	ValidUntil: string
 }
+
+type StopMonitoringDelivery = {
+	MonitoredStopVisit: VehicleActivity[]
+	ResponseTimestamp: string
+	ValidUntil: string
+}
+
 type SituationExchangeDelivery = {
 	PtSituationElement: SituationElement[]
 }
@@ -129,6 +136,16 @@ export type VehicleMonitor = {
 		ServiceDelivery: {
 			ResponseTimestamp: string
 			VehicleMonitoringDelivery: VehicleMonitoringDelivery[]
+			SituationExchangeDelivery: []
+		}
+	}
+}
+
+export type StopMonitor = {
+	Siri: {
+		ServiceDelivery: {
+			ResponseTimestamp: string
+			StopMonitoringDelivery: StopMonitoringDelivery[]
 			SituationExchangeDelivery: []
 		}
 	}

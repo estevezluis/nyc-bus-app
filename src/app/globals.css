@@ -10,6 +10,11 @@
     height: 100%;
 }
 
+.mapboxgl-popup-close-button {
+    width: 20px;
+    height: 20px;
+}
+
 @keyframes rotate {
     from {
         transform: rotate(0deg);

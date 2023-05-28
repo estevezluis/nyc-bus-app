@@ -72,8 +72,7 @@ export default function Search({ onSelection }: Props) {
 				<span
 					className="inline-block w-full h-full bg-center bg-no-repeat"
 					style={{
-						backgroundImage:
-							'url(data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgNTEyIDUxMiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJtNDU4LjA4OCAyMzQuNDEyLTQ3LjUtNDcuNWExNy4wNjggMTcuMDY4IDAgMCAwLTEyLjA4OC01LjAxSDI3My4wOThWNDdhMTcuMDk4IDE3LjA5OCAwIDEgMC0zNC4xOTYgMHYyMC45MDJIMTEzLjVhMTcuMDY4IDE3LjA2OCAwIDAgMC0xMi4wODggNS4wMWwtNDcuNSA0Ny41YTE3LjA5IDE3LjA5IDAgMCAwIDAgMjQuMTc3bDQ3LjUgNDcuNWExNy4wNjggMTcuMDY4IDAgMCAwIDEyLjA4OCA1LjAxaDEyNS40MDJ2MjUwLjgwM0gxODBhMTcuMDk4IDE3LjA5OCAwIDAgMCAwIDM0LjE5NmgxNTJhMTcuMDk4IDE3LjA5OCAwIDAgMCAwLTM0LjE5NmgtNTguOTAyVjMxMS4wOThIMzk4LjVhMTcuMDY4IDE3LjA2OCAwIDAgMCAxMi4wODgtNS4wMWw0Ny41LTQ3LjVhMTcuMDkgMTcuMDkgMCAwIDAgMC0yNC4xNzZaIiBmaWxsPSIjZmZmZmZmIiBjbGFzcz0iZmlsbC0wMDAwMDAiPjwvcGF0aD48L3N2Zz4=)',
+						backgroundImage: 'url(signpost.png)',
 					}}
 				></span>
 			</label>

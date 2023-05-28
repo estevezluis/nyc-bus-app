@@ -12,6 +12,11 @@ import mapboxgl, { GeoJSONSource } from 'mapbox-gl'
 import { lineString, bbox } from '@turf/turf'
 import { decodePolyline } from './Utils'
 
+import dayjs from 'dayjs'
+import relativeTime from 'dayjs/plugin/relativeTime'
+
+dayjs.extend(relativeTime)
+
 import { useState, useEffect } from 'react'
 import { renderToString } from 'react-dom/server'
 
@@ -41,6 +46,8 @@ export default function MapControl() {
 						const rotation = Math.floor(Bearing / 5) * 5
 
 						const markerElement = document.createElement('div')
+
+						markerElement.setAttribute('class', 'cursor-pointer')
 
 						const imageElement = document.createElement('img')
 
@@ -73,16 +80,35 @@ export default function MapControl() {
 										.VehicleActivity[0].MonitoredVehicleJourney
 
 								const currentPopUp =
-									mark.getPopup() ?? new mapboxgl.Popup({ maxWidth: '100%' })
+									mark.getPopup() ?? new mapboxgl.Popup({ maxWidth: '400px' })
 
 								currentPopUp.setHTML(
 									renderToString(
 										<PopUp
-											DestinationName={DestinationName}
-											PublishedLineName={PublishedLineName}
-											VehicleRef={VehicleRef}
-											OnwardCalls={OnwardCalls}
-										/>
+											imageSrc={'bus.png'}
+											title={`${PublishedLineName} ${DestinationName}`}
+											type={`Vehicle # ${VehicleRef.split('_')[1]}`}
+											prompt="Next stops"
+										>
+											<ul>
+												{OnwardCalls.OnwardCall.map((onwardCall) => {
+													return (
+														<li key={onwardCall.StopPointRef}>
+															<span className="font-semibold">
+																{onwardCall.StopPointName}
+															</span>
+															&nbsp;
+															{dayjs(onwardCall.ExpectedArrivalTime).fromNow()}
+															,&nbsp;
+															{
+																onwardCall.Extensions.Distances
+																	.PresentableDistance
+															}
+														</li>
+													)
+												})}
+											</ul>
+										</PopUp>
 									)
 								)
 
