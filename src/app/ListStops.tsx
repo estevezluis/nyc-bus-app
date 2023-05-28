@@ -35,8 +35,8 @@ export default function ListStops({ routeId, directionId }: Props) {
 				setStops(() => response.stops)
 			})
 
-		if (!!markerRef.current) {
-			return () => {
+		return () => {
+			if (!!markerRef.current) {
 				markerRef.current!.remove()
 			}
 		}
@@ -78,9 +78,10 @@ export default function ListStops({ routeId, directionId }: Props) {
 				.setLngLat([stop.longitude, stop.latitude])
 				.addTo(map as mapboxgl.Map)
 
-			const popup = new mapboxgl.Popup().setHTML(
+			const popup = new mapboxgl.Popup({ maxWidth: '400px' }).setHTML(
 				renderToString(
 					<PopUp
+						imageSrc={'signpost.png'}
 						title={stop.name}
 						type={`Stopcode ${stop.id.split('_')[1]}`}
 						prompt="Buses en-route:"
@@ -97,21 +98,23 @@ export default function ListStops({ routeId, directionId }: Props) {
 											{PublishedLineName} {DestinationName}
 										</div>
 										<ul>
-											{routeData.map(({ MonitoredVehicleJourney }) => {
-												return (
-													<li key={MonitoredVehicleJourney.JourneyPatternRef}>
-														{dayjs(
-															MonitoredVehicleJourney.MonitoredCall
-																.AimedDepartureTime
-														).fromNow()}
-														,&nbsp;
-														{
-															MonitoredVehicleJourney.MonitoredCall.Extensions
-																.Distances.PresentableDistance
-														}
-													</li>
-												)
-											})}
+											{routeData
+												.slice(0, 3)
+												.map(({ MonitoredVehicleJourney }) => {
+													return (
+														<li key={MonitoredVehicleJourney.JourneyPatternRef}>
+															{dayjs(
+																MonitoredVehicleJourney.MonitoredCall
+																	.AimedDepartureTime
+															).fromNow()}
+															,&nbsp;
+															{
+																MonitoredVehicleJourney.MonitoredCall.Extensions
+																	.Distances.PresentableDistance
+															}
+														</li>
+													)
+												})}
 										</ul>
 									</div>
 								)

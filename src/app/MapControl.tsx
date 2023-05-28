@@ -80,11 +80,12 @@ export default function MapControl() {
 										.VehicleActivity[0].MonitoredVehicleJourney
 
 								const currentPopUp =
-									mark.getPopup() ?? new mapboxgl.Popup({ maxWidth: '100%' })
+									mark.getPopup() ?? new mapboxgl.Popup({ maxWidth: '400px' })
 
 								currentPopUp.setHTML(
 									renderToString(
 										<PopUp
+											imageSrc={'bus.png'}
 											title={`${PublishedLineName} ${DestinationName}`}
 											type={`Vehicle # ${VehicleRef.split('_')[1]}`}
 											prompt="Next stops"
