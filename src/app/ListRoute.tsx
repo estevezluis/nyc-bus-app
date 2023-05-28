@@ -55,6 +55,9 @@ export default function ListRoute({ route }: Props) {
 			)
 			setStops(fulfilledValues)
 		})
+		return () => {
+			if (!!markerRef.current) markerRef.current.remove()
+		}
 	}, [route])
 
 	async function getStopData(stopId: string): Promise<{ siri: StopMonitor }> {
@@ -81,7 +84,7 @@ export default function ListRoute({ route }: Props) {
 			'cursor-pointer rounded-full h-2 w-2 bg-green-600'
 		)
 
-		if (markerRef.current) markerRef.current.remove()
+		if (!!markerRef.current) markerRef.current.remove()
 
 		getStopData(stop.id).then(({ siri }) => {
 			const grouped = groupBy(
