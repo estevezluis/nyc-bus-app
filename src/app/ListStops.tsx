@@ -76,7 +76,7 @@ export default function ListStops({ routeId, directionId }: Props) {
 
 			let groupKeys = Object.keys(grouped)
 
-			const routeIndex = groupKeys.findIndex(key => key === routeId)
+			const routeIndex = groupKeys.findIndex((key) => key === routeId)
 
 			if (routeIndex > -1) {
 				const removed = groupKeys.splice(routeIndex, 1)[0]
