@@ -74,6 +74,16 @@ export default function ListStops({ routeId, directionId }: Props) {
 				(item) => item.MonitoredVehicleJourney.LineRef
 			)
 
+			let groupKeys = Object.keys(grouped)
+
+			const routeIndex = groupKeys.findIndex(key => key === routeId)
+
+			if (routeIndex > -1) {
+				const removed = groupKeys.splice(routeIndex, 1)[0]
+
+				groupKeys.unshift(removed)
+			}
+
 			const mark = new mapboxgl.Marker(markerElement)
 				.setLngLat([stop.longitude, stop.latitude])
 				.addTo(map as mapboxgl.Map)
@@ -87,8 +97,8 @@ export default function ListStops({ routeId, directionId }: Props) {
 						prompt="Buses en-route:"
 					>
 						<div>
-							{Object.keys(grouped).map((routeId) => {
-								const routeData = grouped[routeId]
+							{groupKeys.map((groupKey) => {
+								const routeData = grouped[groupKey]
 
 								const { PublishedLineName, DestinationName } =
 									routeData[0].MonitoredVehicleJourney
@@ -136,7 +146,7 @@ export default function ListStops({ routeId, directionId }: Props) {
 				return (
 					<li
 						key={stop.id}
-						onClick={(e) => onClick(stop)}
+						onClick={(_e) => onClick(stop)}
 						className="cursor-pointer hover:bg-stone-100"
 					>
 						<span className="pl-2.5">{stop.name}</span>
