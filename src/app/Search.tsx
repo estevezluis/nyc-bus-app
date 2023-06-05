@@ -85,7 +85,11 @@ export default function Search({ onSelection }: Props) {
 				</div>
 				<div className="w-8 h-full py-2.5">
 					<button
-						className={selected ? 'w-full dark:hover:bg-neutral-700 hover:bg-neutral-200' : 'hidden'}
+						className={
+							selected
+								? 'w-full dark:hover:bg-neutral-700 hover:bg-neutral-200'
+								: 'hidden'
+						}
 						onClick={resetBtnClick}
 					>
 						<svg
