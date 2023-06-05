@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-import { API_ENDPOINT, API_KEY } from "@/app/constants";
+import { API_ENDPOINT, API_KEY } from '@/app/constants'
 
 export async function GET(req: NextRequest) {
 	if (
-		!req.nextUrl.searchParams.has('routeId') || 
-		!req.nextUrl.searchParams.has('directionId')) {
+		!req.nextUrl.searchParams.has('routeId') ||
+		!req.nextUrl.searchParams.has('directionId')
+	) {
 		return NextResponse.json({})
 	}
 
@@ -14,7 +15,7 @@ export async function GET(req: NextRequest) {
 
 	const params = new URLSearchParams()
 	params.append('key', API_KEY)
-	params.append('version', '2') 
+	params.append('version', '2')
 
 	params.append('routeId', routeId)
 	params.append('directionId', directionId)
@@ -27,4 +28,3 @@ export async function GET(req: NextRequest) {
 
 	return NextResponse.json(apiResData)
 }
-

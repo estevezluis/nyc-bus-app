@@ -1,0 +1,31 @@
+name: Cypress Tests
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+      - feature/*
+      - dev/*
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    env:
+        API_ENDPOINT: ${{ secrets.API_ENDPOINT }}
+        API_KEY: ${{ secrets.API_KEY }}
+        MAPBOX_ACCESS_TOKEN: ${{ secrets.MAPBOX_ACCESS_TOKEN }} 
+
+    steps:
+        - uses: actions/checkout@v3
+        - uses: pnpm/action-setup@v2
+          with:
+            version: 'latest'
+        - uses: actions/setup-node@v3
+          with:
+            node-version: 18
+        - name: Install dependencies
+          run: pnpm install
+        - name: Start server and test
+          run: pnpm run test

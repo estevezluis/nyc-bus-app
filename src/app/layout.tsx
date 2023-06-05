@@ -12,8 +12,13 @@ export default function RootLayout({
 }) {
 	return (
 		<html lang="en">
-			<meta httpEquiv="Content-Security-Policy" content="connect-src 'self' https://*.mapbox.com;" />
-			<body className="m-0 p-0">{children}</body>
+			<meta
+				httpEquiv="Content-Security-Policy"
+				content="connect-src 'self' https://*.mapbox.com;"
+			/>
+			<body className="m-0 p-0 dark:bg-neutral-800 bg-slate-100">
+				{children}
+			</body>
 		</html>
 	)
 }
