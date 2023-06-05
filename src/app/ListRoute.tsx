@@ -14,7 +14,7 @@ type Props = {
 	route: Route
 }
 
-type StopData = {
+type StopsForDirection = {
 	directionId: string
 	destination: string
 	stops: Stop[]
@@ -23,11 +23,11 @@ type StopData = {
 export default function ListRoute({ route }: Props) {
 	const { map } = useMap() as MapContextType
 	const markerRef = useRef<Marker | null>(null)
-	const [stops, setStops] = useState<StopData[] | null>(null)
+	const [stops, setStops] = useState<StopsForDirection[] | null>(null)
 
 	useEffect(() => {
-		const promises: Promise<StopData>[] = route.directions.map(
-			({ directionId, destination }) => {
+		const getStopsForDirections: Promise<StopsForDirection>[] =
+			route.directions.map(async ({ directionId, destination }) => {
 				const params = new URLSearchParams({
 					routeId: route.id,
 					directionId,
@@ -40,12 +40,11 @@ export default function ListRoute({ route }: Props) {
 					.then((response: { stops: Stop[] }) => {
 						return { directionId, destination, stops: response.stops }
 					})
-			}
-		)
+			})
 
-		Promise.allSettled(promises).then((results) => {
-			const fulfilledValues: StopData[] = results.reduce(
-				(acc: StopData[], result) => {
+		Promise.allSettled(getStopsForDirections).then((results) => {
+			const stopsForDirections: StopsForDirection[] = results.reduce(
+				(acc: StopsForDirection[], result) => {
 					if (result.status === 'fulfilled') {
 						acc.push(result.value)
 					}
@@ -53,8 +52,9 @@ export default function ListRoute({ route }: Props) {
 				},
 				[]
 			)
-			setStops(fulfilledValues)
+			setStops(stopsForDirections)
 		})
+
 		return () => {
 			if (!!markerRef.current) markerRef.current.remove()
 		}
@@ -106,7 +106,10 @@ export default function ListRoute({ route }: Props) {
 				.setLngLat([stop.longitude, stop.latitude])
 				.addTo(map as mapboxgl.Map)
 
-			const popup = new mapboxgl.Popup({ maxWidth: '400px' }).setHTML(
+			const popup = new mapboxgl.Popup({
+				maxWidth: '400px',
+				className: 'text-neutral-800 dark:text-slate-300',
+			}).setHTML(
 				renderToString(
 					<PopUp
 						imageSrc={'signpost.png'}
@@ -161,7 +164,7 @@ export default function ListRoute({ route }: Props) {
 	}
 
 	return (
-		<div className="rounded shadow mt-2 bg-white w-full p-2 max-h-[75vh] overflow-auto">
+		<div className="rounded shadow mt-2 bg-slate-100 text-neutral-800 dark:bg-neutral-800 dark:text-slate-300 w-full p-2 max-h-[75vh] overflow-auto">
 			<h3 className="py-1 text-ellipsis">
 				{route.shortName} {route.longName}
 			</h3>
@@ -171,7 +174,9 @@ export default function ListRoute({ route }: Props) {
 					backgroundColor: `#${route.color ?? '000'}`,
 				}}
 			></div>
-			<p className="pt-1 text-sm text-slate-600">{route.description}</p>
+			<p className="pt-1 text-sm text-slate-600 dark:text-slate-400">
+				{route.description}
+			</p>
 
 			<div className="py-2">
 				{!!stops &&
@@ -186,7 +191,7 @@ export default function ListRoute({ route }: Props) {
 												<li
 													key={stop.id}
 													onClick={(_e) => onClick(stop)}
-													className="cursor-pointer hover:bg-stone-100"
+													className="cursor-pointer hover:bg-stone-100 dark:hover:bg-neutral-700"
 												>
 													<span className="pl-2.5">{stop.name}</span>
 												</li>

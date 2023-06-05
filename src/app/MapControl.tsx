@@ -32,93 +32,108 @@ export default function MapControl() {
 		function showLiveVehicles(routeId: string) {
 			const allMarkers: mapboxgl.Marker[] = []
 
-			getVehicleData({ LineRef: routeId }).then((resData: VehicleMonitor) => {
-				resData.Siri.ServiceDelivery.VehicleMonitoringDelivery[0].VehicleActivity.forEach(
-					(activity) => {
-						const {
-							VehicleLocation,
-							Bearing,
-							DestinationName,
-							PublishedLineName,
-							VehicleRef,
-						} = activity.MonitoredVehicleJourney
+			const [operatorRef, lineRef] = routeId.split('_')
 
-						const rotation = Math.floor(Bearing / 5) * 5
+			getVehicleData({ LineRef: lineRef, OperatorRef: operatorRef }).then(
+				(resData: VehicleMonitor) => {
+					resData.Siri.ServiceDelivery.VehicleMonitoringDelivery[0].VehicleActivity.forEach(
+						(activity) => {
+							const {
+								VehicleLocation,
+								Bearing,
+								DestinationName,
+								PublishedLineName,
+								VehicleRef,
+							} = activity.MonitoredVehicleJourney
 
-						const markerElement = document.createElement('div')
+							const rotation = Math.floor(Bearing / 5) * 5
 
-						markerElement.setAttribute('class', 'cursor-pointer')
+							const markerElement = document.createElement('div')
 
-						const imageElement = document.createElement('img')
+							markerElement.setAttribute('class', 'cursor-pointer')
 
-						imageElement.setAttribute('width', '45')
-						imageElement.setAttribute('height', '45')
-						imageElement.setAttribute(
-							'src',
-							`${API_ENDPOINT}/img/vehicle/vehicle-${rotation}.png`
-						)
+							const imageElement = document.createElement('img')
 
-						markerElement.appendChild(imageElement)
+							imageElement.setAttribute('width', '45')
+							imageElement.setAttribute('height', '45')
+							imageElement.setAttribute(
+								'src',
+								`${API_ENDPOINT}/img/vehicle/vehicle-${rotation}.png`
+							)
 
-						const mark = new mapboxgl.Marker(markerElement)
-							.setLngLat([VehicleLocation.Longitude, VehicleLocation.Latitude])
-							.addTo(map as mapboxgl.Map)
+							markerElement.appendChild(imageElement)
 
-						allMarkers.push(mark)
+							const mark = new mapboxgl.Marker(markerElement)
+								.setLngLat([
+									VehicleLocation.Longitude,
+									VehicleLocation.Latitude,
+								])
+								.addTo(map as mapboxgl.Map)
 
-						mark
-							.getElement()
-							.addEventListener('click', async (event: MouseEvent) => {
-								event.preventDefault()
+							allMarkers.push(mark)
 
-								const vehicleData: VehicleMonitor = await getVehicleData({
-									VehicleRef,
-								})
+							mark
+								.getElement()
+								.addEventListener('click', async (event: MouseEvent) => {
+									event.preventDefault()
 
-								const { OnwardCalls } =
-									vehicleData.Siri.ServiceDelivery.VehicleMonitoringDelivery[0]
-										.VehicleActivity[0].MonitoredVehicleJourney
+									const vehicleData: VehicleMonitor = await getVehicleData({
+										OperatorRef: operatorRef,
+										VehicleRef,
+									})
 
-								const currentPopUp =
-									mark.getPopup() ?? new mapboxgl.Popup({ maxWidth: '400px' })
+									const { OnwardCalls } =
+										vehicleData.Siri.ServiceDelivery
+											.VehicleMonitoringDelivery[0].VehicleActivity[0]
+											.MonitoredVehicleJourney
 
-								currentPopUp.setHTML(
-									renderToString(
-										<PopUp
-											imageSrc={'bus.png'}
-											title={`${PublishedLineName} ${DestinationName}`}
-											type={`Vehicle # ${VehicleRef.split('_')[1]}`}
-											prompt="Next stops"
-										>
-											<ul>
-												{OnwardCalls.OnwardCall.map((onwardCall) => {
-													return (
-														<li key={onwardCall.StopPointRef}>
-															<span className="font-semibold">
-																{onwardCall.StopPointName}
-															</span>
-															&nbsp;
-															{dayjs(onwardCall.ExpectedArrivalTime).fromNow()}
-															,&nbsp;
-															{
-																onwardCall.Extensions.Distances
-																	.PresentableDistance
-															}
-														</li>
-													)
-												})}
-											</ul>
-										</PopUp>
+									const currentPopUp =
+										mark.getPopup() ??
+										new mapboxgl.Popup({
+											maxWidth: '400px',
+											className: 'text-neutral-800 dark:text-slate-300',
+										})
+
+									currentPopUp.setHTML(
+										renderToString(
+											<PopUp
+												imageSrc={'bus.png'}
+												title={`${PublishedLineName} ${DestinationName}`}
+												type={`Vehicle # ${VehicleRef.split('_')[1]}`}
+												prompt="Next stops"
+											>
+												<ul className="dark:bg-neutral-800 bg-slate-100">
+													{OnwardCalls.OnwardCall.map((onwardCall) => {
+														return (
+															<li key={onwardCall.StopPointRef}>
+																<span className="font-semibold">
+																	{onwardCall.StopPointName}
+																</span>
+																&nbsp;
+																{dayjs(
+																	onwardCall.ExpectedArrivalTime
+																).fromNow()}
+																,&nbsp;
+																{
+																	onwardCall.Extensions.Distances
+																		.PresentableDistance
+																}
+															</li>
+														)
+													})}
+												</ul>
+											</PopUp>
+										)
 									)
-								)
 
-								mark.setPopup(currentPopUp)
-								mark.togglePopup()
-							})
-					}
-				)
-				setMarkers((prevMarkers) => prevMarkers.concat(allMarkers))
-			})
+									mark.setPopup(currentPopUp)
+									mark.togglePopup()
+								})
+						}
+					)
+					setMarkers((prevMarkers) => prevMarkers.concat(allMarkers))
+				}
+			)
 		}
 
 		if (!!selected && selected.resultType === 'RouteResult') {
@@ -170,6 +185,7 @@ export default function MapControl() {
 	}, [map, setMarkers, selected])
 
 	async function getVehicleData(params: {
+		OperatorRef: string
 		LineRef?: string
 		VehicleRef?: string
 	}): Promise<VehicleMonitor> {

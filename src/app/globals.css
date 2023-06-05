@@ -10,6 +10,21 @@
     height: 100%;
 }
 
+.mapboxgl-popup-content {
+   background-color: #f1f5f9 !important; /* Dark background color */
+}
+.mapboxgl-popup-tip {
+    border-top-color: #f1f5f9 !important; /* Dark background color */
+}
+@media (prefers-color-scheme: dark) {
+    .mapboxgl-popup-content {
+       background-color: #262626 !important; /* Dark background color */
+    }
+    .mapboxgl-popup-tip {
+        border-top-color: #262626 !important; /* Dark background color */
+    }
+}
+  
 .mapboxgl-popup-close-button {
     width: 20px;
     height: 20px;
