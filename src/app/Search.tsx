@@ -113,17 +113,26 @@ export default function Search({ onSelection }: Props) {
 			{!searchTerm.length && (
 				<div className="pb-2.5 w-full h-full shadow bordor rounded items-center justify-center bg-slate-100 text-neutral-800 dark:bg-neutral-800 dark:text-slate-300">
 					<p className="ml-2.5">
-						<span className="font-semibold">Search Examples:</span><br />
-						Route: {examples.map((val, i) => <>
-							<button key={val} type="button" onClick={(e) => {
-								e.preventDefault()
+						<span className="font-semibold">Search Examples:</span>
+						<br />
+						Route:{' '}
+						{examples.map((val, i) => (
+							<>
+								<button
+									key={val}
+									type="button"
+									onClick={(e) => {
+										e.preventDefault()
 
-								setSearchTerm(() => val)
-								suggestionClick(val)
-							}}>{val}</button>
-							{i === examples.length -1 ? '' : ', '}
-						</>
-						)}
+										setSearchTerm(() => val)
+										suggestionClick(val)
+									}}
+								>
+									{val}
+								</button>
+								{i === examples.length - 1 ? '' : ', '}
+							</>
+						))}
 					</p>
 				</div>
 			)}
