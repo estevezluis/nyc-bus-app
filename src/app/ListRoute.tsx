@@ -20,9 +20,17 @@ type StopsForDirection = {
 	stops: Stop[]
 }
 
+const markerElement = document.createElement('div')
+
+markerElement.setAttribute(
+	'class',
+	'cursor-pointer rounded-full h-2 w-2 bg-green-600'
+)
+
 export default function ListRoute({ route }: Props) {
 	const { map } = useMap() as MapContextType
 	const markerRef = useRef<Marker | null>(null)
+	const hoverMarkerRef = useRef<Marker | null>(null)
 	const [stops, setStops] = useState<StopsForDirection[] | null>(null)
 
 	useEffect(() => {
@@ -57,6 +65,7 @@ export default function ListRoute({ route }: Props) {
 
 		return () => {
 			if (!!markerRef.current) markerRef.current.remove()
+			if (!!hoverMarkerRef.current) hoverMarkerRef.current.remove()
 		}
 	}, [route])
 
@@ -185,14 +194,28 @@ export default function ListRoute({ route }: Props) {
 							<div key={directionId} className="accordion-iten">
 								<div className="text-ellipsis font-semibold">{destination}</div>
 								<div className="text-ellipsis">
-									<ul>
+									<ul className="space-y-4">
 										{stops.map((stop) => {
 											return (
 												<li
 													key={stop.id}
+													onMouseOver={(_e) => {
+														const hoverMarker = new mapboxgl.Marker(
+															markerElement
+														)
+															.setLngLat([stop.longitude, stop.latitude])
+															.addTo(map as mapboxgl.Map)
+
+														hoverMarkerRef.current = hoverMarker
+													}}
+													onMouseOut={(_e) => {
+														if (!!hoverMarkerRef.current)
+															hoverMarkerRef.current.remove()
+													}}
 													onClick={(_e) => onClick(stop)}
-													className="cursor-pointer hover:bg-stone-100 dark:hover:bg-neutral-700"
+													className="relative pl-6 cursor-pointer hover:bg-stone-100 dark:hover:bg-neutral-700 overflow-hidden"
 												>
+													<span className="absolute left-0 top-1/2 transform -translate-y-1/2 h-5 w-0.5 bg-gray-500"></span>
 													<span className="pl-2.5">{stop.name}</span>
 												</li>
 											)
