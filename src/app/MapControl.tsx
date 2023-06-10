@@ -338,7 +338,7 @@ export default function MapControl() {
 	}
 
 	return (
-		<div className="absolute z-10 w-1/3 max-w-xs min-w-xs ml-2 mt-2">
+		<div className="absolute z-10 w-1/4 max-w-xs min-w-xs ml-2 mt-2">
 			<div className="relative">
 				<Search onSelection={onSelection} />
 				{!!selected &&
