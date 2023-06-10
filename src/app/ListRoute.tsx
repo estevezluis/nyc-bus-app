@@ -20,13 +20,6 @@ type StopsForDirection = {
 	stops: Stop[]
 }
 
-const markerElement = document.createElement('div')
-
-markerElement.setAttribute(
-	'class',
-	'cursor-pointer rounded-full h-2 w-2 bg-green-600'
-)
-
 export default function ListRoute({ route }: Props) {
 	const { map } = useMap() as MapContextType
 	const markerRef = useRef<Marker | null>(null)
@@ -221,6 +214,12 @@ export default function ListRoute({ route }: Props) {
 												<li
 													key={stop.id}
 													onMouseOver={(_e) => {
+														const markerElement = document.createElement('div')
+
+														markerElement.setAttribute(
+															'class',
+															'cursor-pointer rounded-full h-2 w-2 bg-green-600'
+														)
 														const hoverMarker = new mapboxgl.Marker(
 															markerElement
 														)
