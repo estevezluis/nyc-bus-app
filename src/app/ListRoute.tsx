@@ -233,13 +233,13 @@ export default function ListRoute({ route }: Props) {
 															hoverMarkerRef.current.remove()
 													}}
 													onClick={(_e) => onClick(stop)}
-													className="ml-1 mr-2.5 h-6 flex flex-row items-center space-x-2 cursor-pointer hover:bg-stone-100 dark:hover:bg-neutral-700"
+													className="ml-1 h-8 flex flex-row items-center space-x-2 cursor-pointer hover:bg-neutral-200 dark:hover:bg-neutral-700"
 												>
 													<div
-														className={`relative flex items-center ml-1 w-0.5 h-6`}
+														className={`relative flex items-center ml-1 mr-2 w-0.5 h-8`}
 														style={stopStyle}
 													>
-														<div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-white rounded-full"></div>
+														<div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-neutral-800 dark:bg-white rounded-full"></div>
 													</div>
 													<div className="text-ellipsis whitespace-nowrap overflow-x-hidden">
 														{stop.name}
