@@ -1,14 +1,14 @@
 'use client'
 
 import { API_ENDPOINT } from './constants'
-import { Route, SearchResult, VehicleMonitor } from './type'
+import { Route, SearchResult, Stop, StopMonitor, VehicleMonitor } from './type'
 
 import Search from './Search'
 import ListRoute from './ListRoute'
 import PopUp from './PopUp'
 
 import 'mapbox-gl/dist/mapbox-gl.css'
-import mapboxgl, { GeoJSONSource } from 'mapbox-gl'
+import mapboxgl, { GeoJSONSource, LngLatBounds, Marker } from 'mapbox-gl'
 import { lineString, bbox } from '@turf/turf'
 import { decodePolyline } from './Utils'
 
@@ -17,18 +17,139 @@ import relativeTime from 'dayjs/plugin/relativeTime'
 
 dayjs.extend(relativeTime)
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { renderToString } from 'react-dom/server'
 
 import { MapContextType, useMap } from './MapContext'
+import { debounce, groupBy } from 'lodash'
 
 const SIXTY_SECONDS = 60 * 1000
 
 export default function MapControl() {
 	const { map, reset, setMarkers } = useMap() as MapContextType
 	const [selected, setSelected] = useState<SearchResult | null>(null)
+	const stopMarkersRef = useRef<Marker[]>([])
+
+	async function getStopData(stopId: string): Promise<{ siri: StopMonitor }> {
+		const urlSearchParams = new URLSearchParams({ stopId })
+
+		const url = `/api/stop-for-id?${urlSearchParams.toString()}`
+
+		const response = await fetch(url)
+		const responseData = await response.json()
+
+		return responseData
+	}
 
 	useEffect(() => {
+		const fetchStopsByBounds = debounce((bounds: LngLatBounds) => {
+			const north = bounds.getNorth()
+			const south = bounds.getSouth()
+			const west = bounds.getWest()
+			const east = bounds.getEast()
+
+			fetch(`/api/stops-within-bounds?bounds=${south},${west},${north},${east}`)
+				.then((response) => response.json())
+				.then((response: { stops: Stop[] }) => {
+					if (!!map) {
+						for (const stop of response.stops) {
+							const markerElement = document.createElement('div')
+
+							markerElement.setAttribute(
+								'class',
+								'cursor-pointer rounded-full h-2 w-2 bg-green-600'
+							)
+							const stopMarker = new mapboxgl.Marker(markerElement)
+								.setLngLat([stop.longitude, stop.latitude])
+								.addTo(map as mapboxgl.Map)
+
+							stopMarkersRef.current.push(stopMarker)
+
+							stopMarker.getElement().addEventListener('click', () => {
+								getStopData(stop.id).then(({ siri }) => {
+									const grouped = groupBy(
+										siri.Siri.ServiceDelivery.StopMonitoringDelivery[0]
+											.MonitoredStopVisit,
+										(item) => item.MonitoredVehicleJourney.LineRef
+									)
+
+									let groupKeys = Object.keys(grouped)
+
+									const currentPopUp =
+										stopMarker.getPopup() ??
+										new mapboxgl.Popup({
+											maxWidth: '400px',
+											className: 'text-neutral-800 dark:text-slate-300',
+										}).setHTML(
+											renderToString(
+												<PopUp
+													imageSrc={'signpost.png'}
+													title={stop.name}
+													type={`Stopcode ${stop.id.split('_')[1]}`}
+													prompt="Buses en-route:"
+												>
+													<div>
+														{groupKeys.map((groupKey) => {
+															const routeData = grouped[groupKey]
+
+															const { PublishedLineName, DestinationName } =
+																routeData[0].MonitoredVehicleJourney
+															return (
+																<div key={groupKey}>
+																	<div className="font-semibold">
+																		{PublishedLineName} {DestinationName}
+																	</div>
+																	<ul>
+																		{routeData
+																			.slice(0, 3)
+																			.map(({ MonitoredVehicleJourney }) => {
+																				return (
+																					<li
+																						key={
+																							MonitoredVehicleJourney.JourneyPatternRef
+																						}
+																					>
+																						{dayjs(
+																							MonitoredVehicleJourney
+																								.MonitoredCall
+																								.AimedDepartureTime
+																						).fromNow()}
+																						,&nbsp;
+																						{
+																							MonitoredVehicleJourney
+																								.MonitoredCall.Extensions
+																								.Distances.PresentableDistance
+																						}
+																					</li>
+																				)
+																			})}
+																	</ul>
+																</div>
+															)
+														})}
+													</div>
+												</PopUp>
+											)
+										)
+									stopMarker.setPopup(currentPopUp)
+
+									stopMarker.togglePopup()
+								})
+							})
+						}
+					}
+				})
+		}, 0)
+		function onMove() {
+			for (const stopMarker of stopMarkersRef.current) {
+				stopMarker.remove()
+			}
+			if (!selected && !!map && map.getZoom() >= 14.5) {
+				fetchStopsByBounds(map.getBounds())
+			}
+		}
+
+		map?.on('moveend', onMove)
 		function showLiveVehicles(routeId: string) {
 			const allMarkers: mapboxgl.Marker[] = []
 
@@ -180,6 +301,18 @@ export default function MapControl() {
 			}, SIXTY_SECONDS)
 			return () => {
 				clearInterval(intervalId)
+
+				map?.off('moveend', onMove)
+			}
+		} else {
+			return () => {
+				map?.off('moveend', onMove)
+
+				if (!!stopMarkersRef.current?.length) {
+					for (const stopMarker of stopMarkersRef.current) {
+						stopMarker.remove()
+					}
+				}
 			}
 		}
 	}, [map, setMarkers, selected])
@@ -205,7 +338,7 @@ export default function MapControl() {
 	}
 
 	return (
-		<div className="absolute z-10 w-1/3 max-w-xs min-w-xs ml-2 mt-2">
+		<div className="absolute z-10 w-1/4 max-w-xs min-w-xs ml-2 mt-2">
 			<div className="relative">
 				<Search onSelection={onSelection} />
 				{!!selected &&

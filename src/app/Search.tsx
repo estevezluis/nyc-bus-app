@@ -9,6 +9,8 @@ type Props = {
 	onSelection: (selected: SearchResult | null) => void
 }
 
+const examples = ['M31', 'BM4', 'BX9']
+
 export default function Search({ onSelection }: Props) {
 	const prefersDarkScheme = useMediaQuery()
 	const [searchTerm, setSearchTerm] = useState<string>('')
@@ -108,6 +110,32 @@ export default function Search({ onSelection }: Props) {
 					</button>
 				</div>
 			</div>
+			{!searchTerm.length && (
+				<div className="pb-2.5 w-full h-full shadow bordor rounded items-center justify-center bg-slate-100 text-neutral-800 dark:bg-neutral-800 dark:text-slate-300">
+					<p className="ml-2.5">
+						<span className="font-semibold">Search Examples:</span>
+						<br />
+						Route:{' '}
+						{examples.map((val, i) => (
+							<>
+								<button
+									key={val}
+									type="button"
+									onClick={(e) => {
+										e.preventDefault()
+
+										setSearchTerm(() => val)
+										suggestionClick(val)
+									}}
+								>
+									{val}
+								</button>
+								{i === examples.length - 1 ? '' : ', '}
+							</>
+						))}
+					</p>
+				</div>
+			)}
 			<div className="absolute w-full bg-slate-100 text-neutral-800 dark:bg-neutral-800 dark:text-slate-300">
 				<ul className="ml-2.5">
 					{suggestions.slice(0, 5).map(({ label, value }) => {

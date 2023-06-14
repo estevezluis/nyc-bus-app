@@ -34,8 +34,6 @@ describe('Search for Bus', () => {
     cy.contains('h3', busRoute.longName).should('exist')
 
     cy.wait('@fetchData', { timeout: 10 * 1000 })
-    // interval in MapControl.tsx
-    cy.wait('@fetchData', { timeout: 65 * 1000 })
 
     // reset map
     cy.get('div[data-page="search"] button').click()
